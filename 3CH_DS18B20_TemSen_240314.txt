@@ -1,0 +1,86 @@
+/*********
+  Rui Santos
+  Complete project details at http://randomnerdtutorials.com  
+  Based on the Dallas Temperature Library example
+*********/
+int LogStep = 5;
+//String buffer;
+
+#include <OneWire.h>
+#include <DallasTemperature.h>
+#include <LiquidCrystal_I2C.h>
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+unsigned long time;
+// Data wire is conntec to the Arduino digital pin 4
+#define ONE_WIRE_BUS_1 2
+#define ONE_WIRE_BUS_2 4
+#define ONE_WIRE_BUS_3 6
+
+// Setup a oneWire instance to communicate with any OneWire devices
+OneWire oneWire1(ONE_WIRE_BUS_1);
+OneWire oneWire2(ONE_WIRE_BUS_2);
+OneWire oneWire3(ONE_WIRE_BUS_3);
+
+// Pass our oneWire reference to Dallas Temperature sensor 
+DallasTemperature sensors1(&oneWire1);
+DallasTemperature sensors2(&oneWire2);
+DallasTemperature sensors3(&oneWire3);
+
+void setup(void)
+{
+  // Start serial communication for debugging purposes
+  Serial.begin(9600);
+  // Start up the library
+  sensors1.begin();
+  sensors2.begin();
+  sensors3.begin();
+    lcd.init();
+  // Print a message to the LCD.
+  lcd.backlight();
+  lcd.setCursor(0, 0);
+  lcd.print("DS18B20 TEST!");
+  lcd.setCursor(0, 1);
+  lcd.print("LAB501 UM SAV");
+  delay(2000);
+  lcd.clear();
+}
+
+void loop(void){ 
+  time = millis();
+  time = time/1000;
+  // Call sensors.requestTemperatures() to issue a global temperature and Requests to all devices on the bus
+  sensors1.requestTemperatures(); 
+  sensors2.requestTemperatures();
+  sensors3.requestTemperatures();
+  float tempC1 = sensors1.getTempCByIndex(0);
+  float tempC2 = sensors2.getTempCByIndex(0);
+  float tempC3 = sensors3.getTempCByIndex(0);
+
+  //Serial.print("Channel 1: ");
+  // Why "byIndex"? You can have more than one IC on the same bus. 0 refers to the first IC on the wire
+  if (time%LogStep == 0) {
+    Serial.print(tempC1);
+    Serial.print(" "); 
+    Serial.print(tempC2);
+    Serial.print(" "); 
+    Serial.print(tempC3);
+    Serial.print("\n");
+  }
+
+  lcd.setCursor(0, 0);
+  lcd.print("Room: ");
+  lcd.print(tempC3);
+  lcd.print((char)223);
+  lcd.print("C");
+
+  lcd.setCursor(0, 1);
+  lcd.print(tempC1);
+  lcd.print((char)223);
+  lcd.print("C");
+
+  lcd.setCursor(9, 1);
+  lcd.print(tempC2);
+  lcd.print((char)223);
+  lcd.print("C");
+  //delay(1000);
+}
